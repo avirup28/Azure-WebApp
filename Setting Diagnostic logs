@@ -1,0 +1,24 @@
+Import-csv <path> |%{$webAppLogResource = Get-AzureRmResource -ResourceGroupName $_.RG  -ResourceType Microsoft.Web/sites/config -ResourceName $_.N -ApiVersion 2018-02-01
+$propertyObject = $webAppLogResource.Properties
+
+$propertyObject.applicationLogs.azureBlobStorage.level = "Verbose"
+$propertyObject.applicationLogs.azureBlobStorage.sasUrl = "<URL"
+$propertyObject.applicationLogs.azureBlobStorage.retentionInDays = 30
+$propertyObject.httpLogs.fileSystem.enabled = $false                
+$propertyObject.httpLogs.azureBlobStorage.sasUrl = "<URL>"
+$propertyObject.httpLogs.azureBlobStorage.retentionInDays = 30
+$propertyObject.httpLogs.azureBlobStorage.enabled = $true
+$propertyObject.failedRequestsTracing.enabled = $true
+$propertyObject.detailedErrorMessages.enabled = $true
+
+Set-AzureRmResource -PropertyObject $propertyObject -ResourceGroupName $_.RG -ResourceType Microsoft.Web/sites/config -ResourceName $_.N -ApiVersion 2015-08-01 -Force }
+
+
+
+<#
+
+   I have run the above script as my requirement was different, I already had all the values so I edited the exisiting script like this.
+   The core script from where I took this Idea is posted by MSFT in the below URL
+   https://blogs.msdn.microsoft.com/akashkhandelwal/2018/06/25/azure-app-services-setting-diagnostic-logs-in-azure-webapps-using-powershell/
+   
+#>
