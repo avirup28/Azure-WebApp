@@ -15,6 +15,66 @@ Set-AzureRmResource -PropertyObject $propertyObject -ResourceGroupName $_.RG -Re
 
 
 
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+ 
+
+$WebApps = Get-AzureRmWebApp | select Name , ResourceGroup
+
+foreach ($WebApp in $WebApps) {
+
+$Wname = $WebApp.Name
+$Wgroup = $Webapp.ResourceGroup
+
+
+$webAppLogResource = Get-AzureRmResource -ResourceGroupName $Wgroup -ResourceType Microsoft.Web/sites/config -ResourceName $Wname -ApiVersion 2015-08-01
+$propertyObject = $webAppLogResource.Properties
+ 
+
+ if ($webAppLogResource) {
+
+
+    $ContainerSasUrl = <Value>
+
+
+
+ if ($propertyObject.applicationLogs.azureBlobStorage.level -ne "Verbose")                 { $propertyObject.applicationLogs.azureBlobStorage.level = "Verbose" }
+
+
+ if ($propertyObject.applicationLogs.azureBlobStorage.sasUrl -ne "$ContainerSasUrl")       { $propertyObject.applicationLogs.azureBlobStorage.sasUrl = "$ContainerSasUrl"}
+
+                 
+ if ($propertyObject.applicationLogs.azureBlobStorage.retentionInDays -ne 30)              { $propertyObject.applicationLogs.azureBlobStorage.retentionInDays = 30 }
+
+                 
+ if ($propertyObject.httpLogs.fileSystem.enabled -ne $false)                               { $propertyObject.httpLogs.fileSystem.enabled = $false }  
+
+                        
+ if ($propertyObject.httpLogs.azureBlobStorage.sasUrl -ne "$ContainerSasUrl")              { $propertyObject.httpLogs.azureBlobStorage.sasUrl -ne "$ContainerSasUrl" }
+
+                  
+ if ($propertyObject.httpLogs.azureBlobStorage.retentionInDays -ne 30)                     { $propertyObject.httpLogs.azureBlobStorage.retentionInDays = 30 }
+
+                  
+ if ($propertyObject.httpLogs.azureBlobStorage.enabled -ne $true)                          { $propertyObject.httpLogs.azureBlobStorage.enabled = $true }
+
+                  
+ if ($propertyObject.failedRequestsTracing.enabled -ne $true)                              { $propertyObject.failedRequestsTracing.enabled = $true }
+
+                  
+ if ($propertyObject.detailedErrorMessages.enabled -ne $true)                              { $propertyObject.detailedErrorMessages.enabled = $true }
+
+ 
+ 
+ Set-AzureRmResource -PropertyObject $propertyObject -ResourceGroupName $Wgroup -ResourceType Microsoft.Web/sites/config -ResourceName $Wname/logs -ApiVersion 2015-08-01 -Force 
+
+      }
+}
+
+
+
+
+
 <#
 
    I have run the above script as my requirement was different, I already had all the values so I edited the exisiting script like this.
