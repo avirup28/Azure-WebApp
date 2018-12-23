@@ -19,6 +19,11 @@ Set-AzureRmResource -PropertyObject $propertyObject -ResourceGroupName $_.RG -Re
 
  
 
+$Conn = Get-AutomationConnection -Name AzureRunAsConnection
+Add-AzureRMAccount -ServicePrincipal -Tenant $Conn.TenantID `
+-ApplicationID $Conn.ApplicationID -CertificateThumbprint $Conn.CertificateThumbprint
+ 
+
 $WebApps = Get-AzureRmWebApp | select Name , ResourceGroup
 
 foreach ($WebApp in $WebApps) {
@@ -27,33 +32,27 @@ $Wname = $WebApp.Name
 $Wgroup = $Webapp.ResourceGroup
 
 
-$webAppLogResource = Get-AzureRmResource -ResourceGroupName $Wgroup -ResourceType Microsoft.Web/sites/config -ResourceName $Wname -ApiVersion 2015-08-01
+$webAppLogResource = Get-AzureRmResource -ResourceGroupName $Wgroup -ResourceType Microsoft.Web/sites/config -ResourceName $Wname/logs -ApiVersion 2018-02-01
 $propertyObject = $webAppLogResource.Properties
- 
-
- if ($webAppLogResource) {
-
-
-    $ContainerSasUrl = <Value>
 
 
 
- if ($propertyObject.applicationLogs.azureBlobStorage.level -ne "Verbose")                 { $propertyObject.applicationLogs.azureBlobStorage.level = "Verbose" }
+if ($propertyObject.applicationLogs.azureBlobStorage.level -ne "Verbose")                 { $propertyObject.applicationLogs.azureBlobStorage.level ="Verbose" }
 
 
- if ($propertyObject.applicationLogs.azureBlobStorage.sasUrl -ne "$ContainerSasUrl")       { $propertyObject.applicationLogs.azureBlobStorage.sasUrl = "$ContainerSasUrl"}
+ if ($propertyObject.applicationLogs.azureBlobStorage.sasUrl -ne "https://allwebapplogsna.blob.core.windows.net/az-na-cs-webapp-logs?sp=rwl&st=2018-12-01T12:55:27Z&se=2020-12-02T12:55:00Z&sv=2017-11-09&sig=7f6St9DpCly%2BA1pRD7zo1eT6B7RYJvbRuGqmqqZuPaE%3D&sr=c") { $propertyObject.applicationLogs.azureBlobStorage.sasUrl = "https://allwebapplogsna.blob.core.windows.net/az-na-cs-webapp-logs?sp=rwl&st=2018-12-01T12:55:27Z&se=2020-12-02T12:55:00Z&sv=2017-11-09&sig=7f6St9DpCly%2BA1pRD7zo1eT6B7RYJvbRuGqmqqZuPaE%3D&sr=c"}
 
                  
- if ($propertyObject.applicationLogs.azureBlobStorage.retentionInDays -ne 30)              { $propertyObject.applicationLogs.azureBlobStorage.retentionInDays = 30 }
+ if ($propertyObject.applicationLogs.azureBlobStorage.retentionInDays -ne 365)              { $propertyObject.applicationLogs.azureBlobStorage.retentionInDays = 365 }
 
                  
  if ($propertyObject.httpLogs.fileSystem.enabled -ne $false)                               { $propertyObject.httpLogs.fileSystem.enabled = $false }  
 
                         
- if ($propertyObject.httpLogs.azureBlobStorage.sasUrl -ne "$ContainerSasUrl")              { $propertyObject.httpLogs.azureBlobStorage.sasUrl -ne "$ContainerSasUrl" }
+ if ($propertyObject.httpLogs.azureBlobStorage.sasUrl -ne "https://allwebapplogsna.blob.core.windows.net/az-na-cs-webapp-logs?sp=rwl&st=2018-12-01T12:55:27Z&se=2020-12-02T12:55:00Z&sv=2017-11-09&sig=7f6St9DpCly%2BA1pRD7zo1eT6B7RYJvbRuGqmqqZuPaE%3D&sr=c")       { $propertyObject.httpLogs.azureBlobStorage.sasUrl = "https://allwebapplogsna.blob.core.windows.net/az-na-cs-webapp-logs?sp=rwl&st=2018-12-01T12:55:27Z&se=2020-12-02T12:55:00Z&sv=2017-11-09&sig=7f6St9DpCly%2BA1pRD7zo1eT6B7RYJvbRuGqmqqZuPaE%3D&sr=c" }
 
                   
- if ($propertyObject.httpLogs.azureBlobStorage.retentionInDays -ne 30)                     { $propertyObject.httpLogs.azureBlobStorage.retentionInDays = 30 }
+ if ($propertyObject.httpLogs.azureBlobStorage.retentionInDays -ne 365)                     { $propertyObject.httpLogs.azureBlobStorage.retentionInDays = 365 }
 
                   
  if ($propertyObject.httpLogs.azureBlobStorage.enabled -ne $true)                          { $propertyObject.httpLogs.azureBlobStorage.enabled = $true }
@@ -63,13 +62,11 @@ $propertyObject = $webAppLogResource.Properties
 
                   
  if ($propertyObject.detailedErrorMessages.enabled -ne $true)                              { $propertyObject.detailedErrorMessages.enabled = $true }
+	
+	    Set-AzureRmResource -PropertyObject $propertyObject -ResourceGroupName $Wgroup  -ResourceType Microsoft.Web/sites/config `
+				 -ResourceName $Wname/logs -ApiVersion 2018-02-01 -Force
+    }
 
- 
- 
- Set-AzureRmResource -PropertyObject $propertyObject -ResourceGroupName $Wgroup -ResourceType Microsoft.Web/sites/config -ResourceName $Wname/logs -ApiVersion 2015-08-01 -Force 
-
-      }
-}
 
 
 
