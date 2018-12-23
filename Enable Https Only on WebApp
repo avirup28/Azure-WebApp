@@ -1,0 +1,22 @@
+
+	$Conn = Get-AutomationConnection -Name AzureRunAsConnection
+	Add-AzureRMAccount -ServicePrincipal -Tenant $Conn.TenantID `
+	-ApplicationID $Conn.ApplicationID -CertificateThumbprint $Conn.CertificateThumbprint
+
+
+$WebApps = Get-AzureRmWebApp | where {$_.HttpsOnly -like "false"} | select ResourceGroup, Name
+
+if ($WebApps) {
+foreach ( $WebApp in $WebApps ) {
+
+$Name = $WebApp.Name
+$RG = $WebApp.ResourceGroup
+
+Set-AzureRmWebApp -Name $Name -ResourceGroupName $RG -HttpsOnly $true
+
+Write-Output "Https has been enable for $Name"
+
+                                 } 
+                }
+
+else {Write-Output "Https is enable for all WebApps"}
