@@ -1,0 +1,31 @@
+$Apps = Get-AzWebApp | Where-Object {$PSItem.Tags.Keys -eq "Stage" -and $PSItem.Tags.Values -eq "Prod"} | select Name,ResourceGroup
+
+
+foreach ($App in $Apps) {
+
+$Name = $App.Name
+
+$resourceName = "$Name"+"/authsettings"
+
+
+$resource = Invoke-AzResourceAction -ResourceGroupName $App.ResourceGroup -ResourceType "Microsoft.Web/sites/config" -ResourceName "$resourceName" -Action list -ApiVersion 2015-08-01 -Force
+
+if ($resource.properties.enabled -ne "True") {
+
+$PropertiesObject = @{
+    "enabled" = "True";
+    "runtimeVersion" = "1.0.0"
+    "unauthenticatedClientAction" = "0"; #Action to take when request is not authenticated
+    "defaultProvider" = "0";
+    "clientId" = "client id"; #Application ID 
+    "tokenStoreEnabled" = "True"
+    "issuer" = "https://sts.windows.net/<tenantid>/";
+    "isAadAutoProvisioned" = "True";
+        }
+
+New-AzureRmResource -PropertyObject $PropertiesObject -ResourceGroupName $App.ResourceGroup -ResourceType "Microsoft.Web/sites/config" -ResourceName $resourcename -ApiVersion 2015-08-01 -Force
+
+        }
+
+else {Write-Host "$($App.Name) already has AAD Auth Enable"}
+    }
