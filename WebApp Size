@@ -1,0 +1,15 @@
+$WAs = Get-AzWebApp | select Name, ResourceGroup, ServerFarmId
+
+foreach ($WA in $WAs) {
+
+$WaRG = $WA.ResourceGroup
+$WaName = $WA.Name
+$WaId = $WA.ServerFarmId
+$AspRG = ($WaId -split '/')[4] 
+$AspName = ($WaId -split '/')[8]
+
+$ASP = (Get-AzAppServicePlan -Name $AspName -ResourceGroupName $AspRG).sku
+
+Write-Host "$WaName;$WaRG;$AspName;$AspRG;$($ASP.Tier);$($ASP.Size);$($ASP.Family);$($ASP.Capacity)"
+
+}
