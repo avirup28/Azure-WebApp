@@ -1,0 +1,9 @@
+$WAs = Get-AzWebApp -ResourceGroupName RG | where {$_.ServerFarmId -eq "id"} | select name,ResourceGroup
+
+
+foreach ($WA in $WAs) {
+
+$WaRG = $WA.ResourceGroup
+$WaName = $WA.Name
+
+Stop-AzWebApp -ResourceGroupName $WaRG -Name $WaName}
