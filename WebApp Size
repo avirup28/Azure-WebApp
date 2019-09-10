@@ -10,6 +10,20 @@ $AspName = ($WaId -split '/')[8]
 
 $ASP = (Get-AzAppServicePlan -Name $AspName -ResourceGroupName $AspRG).sku
 
-Write-Host "$WaName;$WaRG;$AspName;$AspRG;$($ASP.Tier);$($ASP.Size);$($ASP.Family);$($ASP.Capacity)"
+
+$Output =New-Object -TypeName PSObject -Property @{
+    WebApp_Name = $WaName
+    ASP_Name = $AspName
+    OS = (Get-AzAppServicePlan -Name $AspName -ResourceGroupName $AspRG).Kind
+    Tier = $($ASP.Tier)
+    Size = $($ASP.Size)
+    Family = $($ASP.Family)
+    Capacity = $($ASP.Capacity)
+
+  } | select WebApp_Name,ASP_Name,OS,Tier,Size,Family,Capacity
+
+
+$Output | Export-Csv .\WebAppSize.csv -Append
+
 
 }
